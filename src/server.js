@@ -5,7 +5,7 @@ const PORT = 3000;
 const app = express();
 
 sequelize.sync({force: false}).then(() =>{
-    console.log("database synced");
+    console.log("db synced");
 }).catch((error)=>{
     console.log("error: ",error);
 });
@@ -99,7 +99,26 @@ app.get('/profile', async(req,res) =>{
     await userProfile(req,res);
 })
 
+app.post('/changePassword', async (req,res) =>{
+    try{
+        const {email, userType, newPassword} = req.body;
+        if(userType=="supplier"){
+            const found = await ec_suppliers.findOne({where: {e_mail: email}});
+            if(found==null){
+                return res.send("user not found");
+            }else{
+                console.log(found.password);
+                found.password = newPassword;
+                await found.save();
+                return res.send("password changed");
+            }
+        }
+    }catch(error){
+        return res.send(error);
+    }
+})
+
 
 app.listen(PORT, () =>{
-    console.log("listening.....")
+    console.log("port listening.....")
 })
